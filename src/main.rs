@@ -1,5 +1,4 @@
 mod app;
-use app::core;
 use app::model::{Cmd};
 use std::path::PathBuf;
 
@@ -46,8 +45,57 @@ fn push_args() -> Vec<clap::Arg<'static>> {
     vec![arg!(-m --message <MESSAGE>).required(false)]
 }
 
+fn run (app : Command) {
+    let matches = app.get_matches();
+
+    match matches.subcommand() {
+        Some(("clone", sub_matches)) => {
+            println!(
+                "Cloning {}",
+                sub_matches.get_one::<String>("REMOTE").expect("required")
+            );
+        }
+        Some(("push", sub_matches)) => {
+            println!(
+                "Pushing to {}",
+                sub_matches.get_one::<String>("REMOTE").expect("required")
+            );
+        }
+        Some(("add", sub_matches)) => {
+            let paths = sub_matches
+                .get_many::<PathBuf>("PATH")
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>();
+            println!("Adding {:?}", paths);
+        }
+        Some(("stash", sub_matches)) => {
+            let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
+            match stash_command {
+                ("apply", sub_matches) => {
+                    let stash = sub_matches.get_one::<String>("STASH");
+                    println!("Applying {:?}", stash);
+                }
+                ("pop", sub_matches) => {
+                    let stash = sub_matches.get_one::<String>("STASH");
+                    println!("Popping {:?}", stash);
+                }
+                ("push", sub_matches) => {
+                    let message = sub_matches.get_one::<String>("message");
+                    println!("Pushing {:?}", message);
+                }
+                (name, _) => {
+                    unreachable!("Unsupported subcommand `{}`", name)
+                }
+            }
+        }
+        _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
+    }
+}
+
+
 /// 构建cli应用
 ///
 fn main() {
-   Cmd::form(create).bind_exec(core::run).run()
+   Cmd::form(create).bind_exec(run).run()
 }
