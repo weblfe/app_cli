@@ -1,101 +1,53 @@
 mod app;
+mod core;
+mod config;
+mod download;
+
 use app::model::{Cmd};
-use std::path::PathBuf;
+use clap::{arg, ArgMatches, Command};
 
-use clap::{arg, Command};
+const VERSION :&str = "0.1.0";
+const AUTHOR : &str = "weblinuxgame@126.com";
+const APPNAME :&str = "protobuf_install";
+const USAGE: &str =  "protobuf_install [OPTIONS]";
 
-
-fn create() -> Command<'static> {
-    Command::new("git")
-        .about("A fictional versioning CLI")
-        .author("weblfe@126.com")
-        .subcommand_required(true)
-        .arg_required_else_help(true)
-        .allow_external_subcommands(true)
-        .allow_invalid_utf8_for_external_subcommands(true)
-        .subcommand(
-            Command::new("clone")
-                .about("Clones repos")
-                .arg(arg!(<REMOTE> "The remote to clone"))
-                .arg_required_else_help(true),
-        )
-        .subcommand(
-            Command::new("push")
-                .about("pushes things")
-                .arg(arg!(<REMOTE> "The remote to target"))
-                .arg_required_else_help(true),
-        )
-        .subcommand(
-            Command::new("add")
-                .about("adds things")
-                .arg_required_else_help(true)
-                .arg(arg!(<PATH> ... "Stuff to add").value_parser(clap::value_parser!(PathBuf))),
-        )
-        .subcommand(
-            Command::new("stash")
-                .args_conflicts_with_subcommands(true)
-                .args(push_args())
-                .subcommand(Command::new("push").args(push_args()))
-                .subcommand(Command::new("pop").arg(arg!([STASH])))
-                .subcommand(Command::new("apply").arg(arg!([STASH]))),
-        )
+/// 创建子命令行
+fn create_cmds() -> Vec<Command<'static>> {
+    return vec![
+        Command::new("list")
+            .about("list protobuf versions")
+            .arg(arg!(-v --version [VERSION] "The protobuf version"))
+            .arg(arg!(-t --table [TABLE] "Show the protobuf view format table"))
+            .arg_required_else_help(true),
+        Command::new("version").about("show tool version").arg_required_else_help(true),
+    ]
 }
 
-fn push_args() -> Vec<clap::Arg<'static>> {
-    vec![arg!(-m --message <MESSAGE>).required(false)]
+/// 构建应用
+fn new_app() -> Cmd<'static> {
+    return Cmd::form(||->Command<'static>{
+        Command::new(APPNAME).
+            author(AUTHOR).
+            version(VERSION).
+            override_usage(USAGE).
+            arg_required_else_help(true).
+            arg(arg!(-y --yes [YES] "force install protobuf bin")).
+            arg(arg!(-c --config [CONFIG] "protobuf installer config file")).
+            arg(arg!(-p --prefix [PREFIX] "protobuf install prefix dir")).
+            arg(arg!(-m --mirror [MIRROR] "protobuf repo mirror address")).
+            arg(arg!(-l --local  [LOCAL] "use local cache for protobuf")).
+            arg(arg!(-v --version [VERSION] "print the tool version")).
+            subcommands(create_cmds())
+    }).add_runner("list",core::list_runner).
+    add_runner("version",|key:&str,args:&ArgMatches| {
+        core::version_runner(VERSION,key,args)
+    }). // 版本号
+    add_runner(app::core::MAIN_RUNNER_KEY,core::download_runner) // 核心主逻辑
 }
-
-fn run (app : Command) {
-    let matches = app.get_matches();
-
-    match matches.subcommand() {
-        Some(("clone", sub_matches)) => {
-            println!(
-                "Cloning {}",
-                sub_matches.get_one::<String>("REMOTE").expect("required")
-            );
-        }
-        Some(("push", sub_matches)) => {
-            println!(
-                "Pushing to {}",
-                sub_matches.get_one::<String>("REMOTE").expect("required")
-            );
-        }
-        Some(("add", sub_matches)) => {
-            let paths = sub_matches
-                .get_many::<PathBuf>("PATH")
-                .into_iter()
-                .flatten()
-                .collect::<Vec<_>>();
-            println!("Adding {:?}", paths);
-        }
-        Some(("stash", sub_matches)) => {
-            let stash_command = sub_matches.subcommand().unwrap_or(("push", sub_matches));
-            match stash_command {
-                ("apply", sub_matches) => {
-                    let stash = sub_matches.get_one::<String>("STASH");
-                    println!("Applying {:?}", stash);
-                }
-                ("pop", sub_matches) => {
-                    let stash = sub_matches.get_one::<String>("STASH");
-                    println!("Popping {:?}", stash);
-                }
-                ("push", sub_matches) => {
-                    let message = sub_matches.get_one::<String>("message");
-                    println!("Pushing {:?}", message);
-                }
-                (name, _) => {
-                    unreachable!("Unsupported subcommand `{}`", name)
-                }
-            }
-        }
-        _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
-    }
-}
-
 
 /// 构建cli应用
 ///
 fn main() {
-   Cmd::form(create).bind_exec(run).run()
+   // 构建应用
+    new_app().run()
 }

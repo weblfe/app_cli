@@ -2,6 +2,8 @@ use std::ffi::OsString;
 use std::collections::HashMap;
 use clap::{ArgMatches, Command};
 
+pub const MAIN_RUNNER_KEY: &str = "main";
+
 #[allow(unused)]
 pub fn run (app : Command) {
     let matches = app.get_matches();
@@ -15,7 +17,7 @@ pub fn run (app : Command) {
                 .collect::<Vec<_>>();
             println!("Calling out to {:?} with {:?}", ext, args);
         }
-        _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
+        _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable!()
     }
 
 }
@@ -31,7 +33,13 @@ pub fn exec (app : Command,runner : HashMap<String,fn(name :&str,matches:&ArgMat
                  Some(exec) => {
                      exec(name,sub_matches);
                  }
-                 _ => unreachable!(),
+                 // 默认主逻辑
+                 _ => match  runner.get(MAIN_RUNNER_KEY)  {
+                     Some(exec) => {
+                         exec(name,sub_matches);
+                     },
+                     _ => unreachable!()
+                 }
              }
         },
         _ => unreachable!(),
