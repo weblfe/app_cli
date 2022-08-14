@@ -15,6 +15,6 @@ pub fn list_runner (key : &str, args : &ArgMatches) {
 }
 
 
-pub fn download_runner (key : &str, args : &ArgMatches) {
+pub fn main_runner(key : &str, args : &ArgMatches) {
     download::download(key,args)
 }

@@ -44,7 +44,7 @@ fn new_app() -> Cmd<'static> {
     add_runner("version",|key:&str,args:&ArgMatches| {
         core::version_runner(VERSION,key,args)
     }). // 版本号
-    add_runner(app::core::MAIN_RUNNER_KEY,core::download_runner) // 核心主逻辑
+    add_runner(app::core::MAIN_RUNNER_KEY,core::main_runner) // 核心主逻辑
 }
 
 /// 构建cli应用
