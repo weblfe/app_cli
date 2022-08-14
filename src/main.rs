@@ -19,7 +19,9 @@ fn create_cmds() -> Vec<Command<'static>> {
             .arg(arg!(-v --version [VERSION] "The protobuf version"))
             .arg(arg!(-t --table [TABLE] "Show the protobuf view format table"))
             .arg_required_else_help(true),
-        Command::new("version").about("show tool version").arg_required_else_help(true),
+        Command::new("version").
+            about("show tool version").
+            arg_required_else_help(false),
     ]
 }
 

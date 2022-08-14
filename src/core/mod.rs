@@ -6,7 +6,7 @@ mod download;
 
 #[allow(unused)]
 pub fn version_runner(version :&str,key : &str, args : &ArgMatches) {
-
+    println!("version {}",version)
 }
 
 
