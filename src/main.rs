@@ -40,16 +40,22 @@ fn new_app() -> Cmd<'static> {
             arg(arg!(-l --local  [LOCAL] "use local cache for protobuf")).
             arg(arg!(-v --version [VERSION] "print the tool version")).
             subcommands(create_cmds())
-    }).add_runner("list",core::list_runner).
+    }).add_runner("list",core::list_runner as app::core::Runner).
     add_runner("version",|key:&str,args:&ArgMatches| {
         core::version_runner(VERSION,key,args)
     }). // 版本号
-    add_runner(app::core::MAIN_RUNNER_KEY,core::main_runner) // 核心主逻辑
+    add_runner(app::core::MAIN_RUNNER_KEY,core::main_runner as app::core::Runner) // 核心主逻辑
 }
 
 /// 构建cli应用
 ///
+#[allow(unused)]
 fn main() {
+    let m = hashmap![
+        ("list",core::list_runner as app::core::Runner),
+        (app::core::MAIN_RUNNER_KEY,core::main_runner as app::core::Runner)
+    ];
    // 构建应用
-    new_app().run()
+    new_app().run();
+
 }

@@ -24,7 +24,7 @@ pub fn run (app : Command) {
 
 
 #[allow(unused)]
-pub fn exec (app : Command,runner : HashMap<String,fn(name :&str,matches:&ArgMatches)> ) {
+pub fn exec (app : Command,runner : HashMap<String,Runner> ) {
     let matches = app.get_matches();
 
     match matches.subcommand() {
@@ -45,3 +45,5 @@ pub fn exec (app : Command,runner : HashMap<String,fn(name :&str,matches:&ArgMat
         _ => unreachable!(),
     }
 }
+
+pub type Runner = fn(&str, &ArgMatches);

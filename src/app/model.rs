@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use clap::{ArgMatches, Command};
+use clap::{Command};
 
 
 pub struct Cmd<'help> {
      app : Command<'help>,
      exec: fn(Command),
-     runner: HashMap<String,fn(&str,&ArgMatches)>,
+     runner: HashMap<String,super::core::Runner>,
 }
 
 
@@ -59,7 +59,7 @@ impl Cmd<'static> {
     ///      add_runner("app",runner).
     ///      run();
     /// ```
-    pub fn add_runner(mut self,name:&str,exec : fn(&str,&ArgMatches)) ->Self {
+    pub fn add_runner(mut self,name:&str,exec : super::core::Runner) ->Self {
         self.runner.insert(name.to_string(),exec);
         return self;
     }

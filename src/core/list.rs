@@ -10,15 +10,16 @@ pub fn list(name : &str, args : &ArgMatches ) {
 #[macro_export]
 macro_rules! hashmap {
     () => (
-        $crate::std::collections::HashMap::new()
+        {
+            std::collections::HashMap::new()
+        }
     );
-    (($key:expr,$value:expr)) => (
-        $crate::std::collections::HashMap::from([
-            ($key ,$value),
-        ])
+    ($(($key:expr,$value:expr)),*) => (
+        {
+            std::collections::HashMap::from([
+                $(($key,$value)),*
+            ])
+        }
     );
-    (($key:expr,$value:expr),$($args:tt)*) => {
-        hashmap(($key,$value),$($b)*)
-    };
 }
 
