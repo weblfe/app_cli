@@ -1,3 +1,0 @@
-/Volumes/data/workpaces/coding/rust/app_cli/cmake-build-debug/CMakeFiles/app_cli.dir
-/Volumes/data/workpaces/coding/rust/app_cli/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Volumes/data/workpaces/coding/rust/app_cli/cmake-build-debug/CMakeFiles/rebuild_cache.dir
