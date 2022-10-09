@@ -32,9 +32,9 @@ const VERSION: &str = "0.1.0";
 
 /// 构建应用
 fn new_app() -> App<'static> {
-    let hash : &str = version_id();
-    let version_runner = |key: &str, args: &ArgMatches| {
-        core::version_runner(VERSION.to_string() + "-" + hash, key, args)
+    let version_runner = move |key: &str, args: &ArgMatches| {
+        let hash : &str = version_id();
+        core::version_runner(VERSION.to_owned() + "-" + hash, key, args)
     };
 
     let  cmd = Command::new(APPNAME).
