@@ -7,8 +7,8 @@ use std::process::Command;
 
 extern crate cc;
 
-const TPL: &[u8; 61] = b"
-    pub fn version_id() -> &'static str {
+const TPL: &[u8; 60] = b"
+    pub fn commit_id() -> &'static str {
         \"{}\"
     }";
 

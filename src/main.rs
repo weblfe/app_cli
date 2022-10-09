@@ -33,7 +33,7 @@ const VERSION: &str = "0.1.0";
 /// 构建应用
 fn new_app() -> App<'static> {
     let version_runner = move |key: &str, args: &ArgMatches| {
-        let hash : &str = version_id();
+        let hash : &str = commit_id();
         core::version_runner(VERSION.to_owned() + "-" + hash, key, args)
     };
 
