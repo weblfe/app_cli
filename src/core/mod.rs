@@ -1,11 +1,11 @@
 use clap::ArgMatches;
 
-mod list;
-mod download;
+pub mod core;
+pub mod list;
 
 
 #[allow(unused)]
-pub fn version_runner(version :&str,key : &str, args : &ArgMatches) {
+pub fn version_runner(version : String, key : &str, args : &ArgMatches) {
     println!("version {}",version)
 }
 
@@ -16,5 +16,22 @@ pub fn list_runner (key : &str, args : &ArgMatches) {
 
 
 pub fn main_runner(key : &str, args : &ArgMatches) {
-    download::download(key,args)
+    core::download(key, args)
+}
+
+#[cfg(all(not(no_global_oom_handling), not(test)))]
+#[macro_export]
+macro_rules! hashmap {
+    () => (
+        {
+            std::collections::HashMap::new()
+        }
+    );
+    ($(($key:expr,$value:expr)),*) => (
+        {
+            std::collections::HashMap::from([
+                $(($key,$value)),*
+            ])
+        }
+    );
 }

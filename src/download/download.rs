@@ -1,23 +1,24 @@
-use reqwest::Url;
 use std::fs::File;
 use std::io::{copy};
 use std::io::Cursor;
 use tempfile::Builder;
-use std::io::Result as ioResult ;
 use std::time::Duration;
+use reqwest::{ClientBuilder, Url};
 
 #[allow(unused)]
 pub async fn build_download(url:&str) ->Result<reqwest::Response, reqwest::Error> {
-    let resp =  reqwest::Client::builder().
-        timeout(Duration::new(360,0)).
-        build()?.
-        get(url).
-        send().await?;
-    Result::Ok(resp)
+    reqwest::Client::builder().
+        timeout(Duration::new(360, 0)).
+        build()?.get(url).send().await
 }
 
 #[allow(unused)]
-pub async fn download_file(target:&str,path:&str)->ioResult<u64> {
+pub fn new_client_builder() ->ClientBuilder {
+     reqwest::Client::builder()
+}
+
+#[allow(unused)]
+pub async fn download_file(target:&str,path:&str)->u64 {
 
     let tmp_dir = Builder::new().prefix(path).tempdir().expect("tmp_dir error: ");
     let mut response = reqwest::get(target).await.expect("response get error: ");
@@ -38,10 +39,10 @@ pub async fn download_file(target:&str,path:&str)->ioResult<u64> {
     let content =  response.text().await.expect("file expect ");
     match copy(&mut content.as_bytes(), &mut dest) {
         Ok(u) => {
-            ioResult::Ok(u)
+            u
         },
       _  => {
-          ioResult::Ok(0)
+          0
        }
     }
 }
@@ -68,7 +69,7 @@ async fn fetch_file(url: String) -> ResultRes<String> {
 mod test {
     use std::fs::File;
     use std::io::{Read, Write};
-    use crate::download::http::{build_download, download_file, fetch_file};
+    use crate::download::download::{build_download, download_file, fetch_file};
 
     #[warn(unused_imports)]
     #[tokio::test]
@@ -99,14 +100,7 @@ mod test {
     async fn test_download_file() {
         let url = "https://github.com/protocolbuffers/protobuf/releases/download/v21.5/protoc-21.5-win64.zip";
         let result = download_file(url,".").await;
-        match result {
-            Ok(u) => {
-                assert!(u>0,"下载失败")
-            },
-            _ => {
-                println!("下载失败")
-            }
-        }
+        assert!(result>0,"下载失败")
     }
 
     #[warn(unused_imports)]

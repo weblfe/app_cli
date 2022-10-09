@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use clap::{Command};
+use clap::{Command,Arg,App};
 
 
 pub struct Cmd<'help> {
      app : Command<'help>,
-     exec: fn(Command),
-     runner: HashMap<String,super::core::Runner>,
+     exec: fn(Command<'help>),
+     runner: HashMap<String,super::app::Runner>,
 }
 
 
@@ -19,7 +19,7 @@ impl Cmd<'static> {
     pub fn new(c : Command<'static>) -> Cmd {
         return Cmd{
             app: c,
-            exec: super::core::run,
+            exec: super::app::run,
             runner: HashMap::new(),
         }
     }
@@ -29,10 +29,10 @@ impl Cmd<'static> {
     /// fn new() ->Command<'static> {
     ///     return Command::new();
     /// }
-    /// let app = Cmd::form(new);
+    /// let app = Cmd::from(new);
     ///     app.run();
     /// ```
-    pub fn form( c: fn()->Command<'static>) ->Cmd<'static> {
+    pub fn from(c: fn() ->Command<'static>) ->Cmd<'static> {
         return Cmd::new(c());
     }
 
@@ -59,8 +59,56 @@ impl Cmd<'static> {
     ///      add_runner("app",runner).
     ///      run();
     /// ```
-    pub fn add_runner(mut self,name:&str,exec : super::core::Runner) ->Self {
+    pub fn add_runner(mut self, name:&str, exec : super::app::Runner) ->Self {
         self.runner.insert(name.to_string(),exec);
+        return self;
+    }
+
+    pub fn set_default(mut self, exec : super::app::Runner) ->Self {
+        self.runner.insert(super::app::DEFAULT_RUNNER_KEY.to_string(), exec);
+        return self;
+    }
+
+    /// 添加命令应用options参数
+    /// ```rust
+    ///  Cmd::new(Command::new()).
+    ///      add_arg(arg!(-y --yes [YES] "force install protobuf bin")).
+    ///      run();
+    /// ```
+    pub fn add_arg<A: Into<Arg<'static>>>(mut self, a: A) -> Self {
+        self.app = self.app.arg(a);
+        return self;
+    }
+
+    /// 添加命令应用子命令
+    ///
+    /// ```rust
+    ///  Cmd::new(Command::new()).
+    ///      add_command(Command::new(LIST_CMD)
+    ///      .about("list protobuf versions")
+    ///      .arg(arg!(-v --version [VERSION] "The protobuf version"))
+    ///      .arg(arg!(-t --table [TABLE] "Show the protobuf view format table"))
+    ///      .arg_required_else_help(true)).
+    ///      run();
+    /// ```
+    pub fn add_command<S: Into<App<'static>>> (mut self, subcmd: S, handler: super::app::Runner) -> Self {
+        let binging = subcmd.into();
+        self.runner.insert(binging.get_name().to_string(),handler);
+        self.app = self.app.subcommand(binging);
+        return self;
+    }
+
+    /// 批量添加
+    /// ```rust
+    ///   let m = hashmap![|n:&str,args:&ArgMatches|{} as super::core::Runner];
+    ///  Cmd::new(Command::new()).
+    ///      batch_add_runners(m).
+    ///      run();
+    /// ```
+    pub fn batch_add_runners(mut self, runners:HashMap<&str,super::app::Runner>) ->Self {
+        for (key,runner) in runners {
+            self.runner.insert(key.to_string(),runner);
+        }
         return self;
     }
 
@@ -75,7 +123,7 @@ impl Cmd<'static> {
            exec(self.app);
            return;
        }
-        super::core::exec(self.app,self.runner);
+        super::app::exec(self.app, self.runner);
     }
 
 }

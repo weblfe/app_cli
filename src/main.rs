@@ -2,60 +2,85 @@ mod app;
 mod core;
 mod config;
 mod download;
+mod output;
 
-use app::model::{Cmd};
+
+extern crate libc;
+
+use libc::c_char;
+use app::model::{Cmd as App};
+use std::ffi::{ CStr,c_int};
 use clap::{arg, ArgMatches, Command};
 
-const VERSION :&str = "0.1.0";
-const AUTHOR : &str = "weblinuxgame@126.com";
-const APPNAME :&str = "protobuf_install";
-const USAGE: &str =  "protobuf_install [OPTIONS]";
+// 引入hash
+include!(concat!(env!("OUT_DIR"), "/git.rs"));
 
-/// 创建子命令行
-fn create_cmds() -> Vec<Command<'static>> {
-    return vec![
-        Command::new("list")
-            .about("list protobuf versions")
-            .arg(arg!(-v --version [VERSION] "The protobuf version"))
-            .arg(arg!(-t --table [TABLE] "Show the protobuf view format table"))
-            .arg_required_else_help(true),
-        Command::new("version").
-            about("show tool version").
-            arg_required_else_help(false),
-    ]
+extern {
+    fn display_name();
+    fn max(n1:c_int,n2:c_int) ->c_int;
+    fn get_module_name() ->*const c_char;
 }
 
+const LIST_CMD: &str = "list";
+const VERSION_CMD: &str = "version";
+
+const AUTHOR: &str = "weblinuxgame@126.com";
+const APPNAME: &str = "protobuf_install";
+const USAGE: &str = "protobuf_install [OPTIONS]";
+const VERSION: &str = "0.1.0";
+
+
 /// 构建应用
-fn new_app() -> Cmd<'static> {
-    return Cmd::form(||->Command<'static>{
-        Command::new(APPNAME).
-            author(AUTHOR).
-            version(VERSION).
-            override_usage(USAGE).
-            arg_required_else_help(true).
-            arg(arg!(-y --yes [YES] "force install protobuf bin")).
-            arg(arg!(-c --config [CONFIG] "protobuf installer config file")).
-            arg(arg!(-p --prefix [PREFIX] "protobuf install prefix dir")).
-            arg(arg!(-m --mirror [MIRROR] "protobuf repo mirror address")).
-            arg(arg!(-l --local  [LOCAL] "use local cache for protobuf")).
-            arg(arg!(-v --version [VERSION] "print the tool version")).
-            subcommands(create_cmds())
-    }).add_runner("list",core::list_runner as app::core::Runner).
-    add_runner("version",|key:&str,args:&ArgMatches| {
-        core::version_runner(VERSION,key,args)
-    }). // 版本号
-    add_runner(app::core::MAIN_RUNNER_KEY,core::main_runner as app::core::Runner) // 核心主逻辑
+fn new_app() -> App<'static> {
+    let hash : &str = version_id();
+    let version_runner = |key: &str, args: &ArgMatches| {
+        core::version_runner(VERSION.to_string() + "-" + hash, key, args)
+    };
+
+    let  cmd = Command::new(APPNAME).
+        author(AUTHOR).
+        version(VERSION).
+        override_usage(USAGE).
+        arg_required_else_help(true);
+
+    let list_cmd = Command::new(LIST_CMD)
+        .about("list protobuf versions")
+        .arg(arg!(-v --version [VERSION] "The protobuf version"))
+        .arg(arg!(-t --table [TABLE] "Show the protobuf view format table"))
+        .arg_required_else_help(true);
+
+    let version_cmd = Command::new(VERSION_CMD).
+        about("show tool version").
+        arg_required_else_help(false);
+
+    return App::new(cmd).add_arg(arg!(-y --yes [YES] "force install protobuf bin")).
+        add_arg(arg!(-c --config [CONFIG] "protobuf installer config file")).
+        add_arg(arg!(-p --prefix [PREFIX] "protobuf install prefix dir")).
+        add_arg(arg!(-m --mirror [MIRROR] "protobuf repo mirror address")).
+        add_arg(arg!(-l --local  [LOCAL] "use local cache for protobuf")).
+        add_arg(arg!(-v --version [VERSION] "print the tool version")).
+        add_command(list_cmd, core::list_runner).
+        add_command(version_cmd, version_runner).
+        set_default(core::main_runner);
+}
+
+fn init() {
+    unsafe {
+        let n= 10;
+        let n2  = 20;
+        let name = get_module_name();
+        let max = max(n as c_int,n2 as c_int);
+        display_name();
+        println!("max {}",max as i32);
+        println!("hello {}",CStr::from_ptr(name).to_str().unwrap());
+    }
 }
 
 /// 构建cli应用
 ///
-#[allow(unused)]
 fn main() {
-    let m = hashmap![
-        ("list",core::list_runner as app::core::Runner),
-        (app::core::MAIN_RUNNER_KEY,core::main_runner as app::core::Runner)
-    ];
-   // 构建应用
+    init();
+    // 构建应用
     new_app().run();
 
 }

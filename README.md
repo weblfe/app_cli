@@ -4,6 +4,14 @@
 
 rust 命令行 - 练手项目
 
+### 基础
+> 1. 基础语法 (let,const,&str,String,if-else,fn,type, use,mod,pub,match)
+> 2. 常用数据结构 struct,HashMap,
+> 3. 常用宏,#[derive(Debug)],#[allow(unused)]
+
+### 初中级
+> 1. 项目目录层级
+> 2. 模块
 
 > 依赖库
  

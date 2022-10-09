@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::collections::HashMap;
 use clap::{ArgMatches, Command};
 
-pub const MAIN_RUNNER_KEY: &str = "main";
+pub const DEFAULT_RUNNER_KEY: &str = "default";
 
 #[allow(unused)]
 pub fn run (app : Command) {
@@ -34,15 +34,20 @@ pub fn exec (app : Command,runner : HashMap<String,Runner> ) {
                      exec(name,sub_matches);
                  }
                  // 默认主逻辑
-                 _ => match  runner.get(MAIN_RUNNER_KEY)  {
+                 _ => match  runner.get(DEFAULT_RUNNER_KEY)  {
                      Some(exec) => {
-                         exec(name,sub_matches);
+                         exec(DEFAULT_RUNNER_KEY, sub_matches);
                      },
                      _ => unreachable!()
                  }
              }
         },
-        _ => unreachable!(),
+        _ => match  runner.get(DEFAULT_RUNNER_KEY)  {
+            Some(exec) => {
+                exec(DEFAULT_RUNNER_KEY, &matches);
+            },
+            _ => unreachable!()
+        }
     }
 }
 
