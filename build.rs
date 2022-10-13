@@ -12,7 +12,7 @@ const TPL: &[u8; 60] = b"
         \"{}\"
     }";
 
-fn init() {
+fn pack_commit_id() {
     let result = Command::new("git").args(&["rev-parse", "--short", "HEAD"]).output().unwrap();
     let out_dir = env::var("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("git.rs");
@@ -24,7 +24,7 @@ fn init() {
 }
 
 fn main() {
-    init();
+    pack_commit_id();
     cc::Build::new()
         .file("src/c/hello.c")
         .compile("hello");

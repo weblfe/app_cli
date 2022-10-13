@@ -1,22 +1,22 @@
 use std::collections::HashMap;
-use clap::{Command,Arg,App};
+use clap::{Command,Arg};
 
 
-pub struct Cmd<'help> {
-     app : Command<'help>,
-     exec: fn(Command<'help>),
+pub struct Cmd {
+     app : Command,
+     exec: fn(Command),
      runner: HashMap<String,super::app::Runner>,
 }
 
 
 #[allow(unused)]
-impl Cmd<'static> {
+impl Cmd {
 
     /// 构建命令行
     /// ```rust
     /// let app = Cmd::new(Command::new());
     /// ```
-    pub fn new(c : Command<'static>) -> Cmd {
+    pub fn new(c : Command) -> Cmd {
         return Cmd{
             app: c,
             exec: super::app::run,
@@ -32,7 +32,7 @@ impl Cmd<'static> {
     /// let app = Cmd::from(new);
     ///     app.run();
     /// ```
-    pub fn from(c: fn() ->Command<'static>) ->Cmd<'static> {
+    pub fn from(c: fn() ->Command) ->Cmd {
         return Cmd::new(c());
     }
 
@@ -75,7 +75,7 @@ impl Cmd<'static> {
     ///      add_arg(arg!(-y --yes [YES] "force install protobuf bin")).
     ///      run();
     /// ```
-    pub fn add_arg<A: Into<Arg<'static>>>(mut self, a: A) -> Self {
+    pub fn add_arg(mut self, a: impl Into<Arg>) -> Self {
         self.app = self.app.arg(a);
         return self;
     }
@@ -91,7 +91,7 @@ impl Cmd<'static> {
     ///      .arg_required_else_help(true)).
     ///      run();
     /// ```
-    pub fn add_command<S: Into<App<'static>>> (mut self, subcmd: S, handler: super::app::Runner) -> Self {
+    pub fn add_command (mut self, subcmd:impl Into<Command>, handler: super::app::Runner) -> Self {
         let binging = subcmd.into();
         self.runner.insert(binging.get_name().to_string(),handler);
         self.app = self.app.subcommand(binging);
