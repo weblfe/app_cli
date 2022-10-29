@@ -4,3 +4,4 @@
 .vscode
 .DS_Store
 cmake-build-debug
+.env

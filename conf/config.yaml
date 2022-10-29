@@ -1,0 +1,6 @@
+version: "0.1.0"
+cache_dir: "~/.protoc_install/cache/"
+proxy:
+  host: "http://127.0.0.1:7890"
+  user: ""
+  password: ""
