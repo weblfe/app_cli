@@ -2,7 +2,7 @@
 // Created by 何为 on 2022/10/9.
 //
 
-#include "hello.h"
+#include "git.h"
 #include <stdio.h>
 
 /// 获取c模块名

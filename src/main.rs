@@ -9,6 +9,7 @@ use std::ffi::{ CStr,c_int};
 use clap::{arg, ArgMatches, Command};
 
 extern crate libc;
+
 // 引入hash
 include!(concat!(env!("OUT_DIR"), "/git.rs"));
 

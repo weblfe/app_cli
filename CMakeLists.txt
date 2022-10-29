@@ -6,5 +6,5 @@ set(CMAKE_C_STANDARD 11)
 include_directories(src/c)
 
 add_executable(app_cli
-        src/c/hello.c
-        src/c/hello.h)
+        src/c/git.c
+        src/c/git.h)

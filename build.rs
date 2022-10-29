@@ -26,6 +26,6 @@ fn pack_commit_id() {
 fn main() {
     pack_commit_id();
     cc::Build::new()
-        .file("src/c/hello.c")
-        .compile("hello");
+        .file("src/c/git.c")
+        .compile("git");
 }
